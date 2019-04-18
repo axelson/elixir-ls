@@ -5,7 +5,7 @@
   "dialyxir": {:hex, :dialyxir, "1.0.0-rc.4", "71b42f5ee1b7628f3e3a6565f4617dfb02d127a0499ab3e72750455e986df001", [:mix], [{:erlex, "~> 0.1", [hex: :erlex, repo: "hexpm", optional: false]}], "hexpm"},
   "distillery": {:hex, :distillery, "1.4.0", "d633cd322c8efa0428082b00b7f902daf8caa166d45f9022bbc19a896d2e1e56", [:mix], []},
   "earmark": {:hex, :earmark, "1.2.0", "bf1ce17aea43ab62f6943b97bd6e3dc032ce45d4f787504e3adf738e54b42f3a", [:mix], []},
-  "elixir_sense": {:git, "https://github.com/elixir-lsp/elixir_sense.git", "4c7493c1c71730a5345296aaa5d24407fda44c52", []},
+  "elixir_sense": {:git, "https://github.com/elixir-lsp/elixir_sense.git", "f4de540cb530bd409419a199de4761e0c4799235", [branch: "ms-improve-typespec-support"]},
   "erl2ex": {:git, "https://github.com/dazuma/erl2ex.git", "1b8c7d026168c0e81ca1409ff76030f85ff3af8b", []},
   "erlex": {:hex, :erlex, "0.1.6", "c01c889363168d3fdd23f4211647d8a34c0f9a21ec726762312e08e083f3d47e", [:mix], [], "hexpm"},
   "ex_doc": {:hex, :ex_doc, "0.15.1", "d5f9d588fd802152516fccfdb96d6073753f77314fcfee892b15b6724ca0d596", [:mix], [{:earmark, "~> 1.1", [hex: :earmark, optional: false]}]},
