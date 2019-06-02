@@ -293,6 +293,8 @@ defmodule ElixirLS.LanguageServer.Server do
   end
 
   defp handle_request(initialize_req(_id, root_uri, client_capabilities), state) do
+    IO.warn("INITIALIZEEEEEEE")
+    Log.info("initialize received")
     show_version_warnings()
 
     state =
@@ -341,6 +343,7 @@ defmodule ElixirLS.LanguageServer.Server do
   end
 
   defp handle_request(hover_req(_id, uri, line, character), state) do
+    Log.info("Handling hover request")
     fun = fn ->
       Hover.hover(state.source_files[uri].text, line, character)
     end

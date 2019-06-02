@@ -4,6 +4,8 @@ defmodule ElixirLS.LanguageServer.Providers.Hover do
   """
 
   def hover(text, line, character) do
+    msg = "{text, line + 1, character + 1}"
+    Log.info("#{msg}: #{inspect({text, line + 1, character + 1})}")
     %{subject: subject, docs: docs} = ElixirSense.docs(text, line + 1, character + 1)
 
     line_text = Enum.at(String.split(text, "\n"), line)
@@ -45,5 +47,12 @@ defmodule ElixirLS.LanguageServer.Providers.Hover do
 
   defp contents(%{docs: markdown}) do
     markdown
+  end
+end
+
+defmodule Log do
+  def info(message) do
+    File.write("/tmp/elixir_ls.log", [message, "\n"], [:append])
+    JsonRpc.log_message(:info, message)
   end
 end

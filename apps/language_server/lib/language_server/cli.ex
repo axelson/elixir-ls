@@ -7,7 +7,8 @@ defmodule ElixirLS.LanguageServer.CLI do
     Launch.start_mix()
 
     Application.ensure_all_started(:language_server, :temporary)
-    IO.puts("Started ElixirLS")
+    IO.puts("Started ElixirLS!!")
+    Log.info("starttt")
     Launch.print_versions()
 
     Mix.shell(ElixirLS.LanguageServer.MixShell)
