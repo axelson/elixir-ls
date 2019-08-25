@@ -207,6 +207,7 @@ defmodule ElixirLS.LanguageServer.Dialyzer do
     if is_pid(write_manifest_pid), do: Process.exit(write_manifest_pid, :cancelled)
 
     parent = self()
+    # Why are we using spawn link instead of a task here?
     analysis_pid = spawn_link(fn -> compile(parent, state) end)
 
     %{
@@ -292,6 +293,7 @@ defmodule ElixirLS.LanguageServer.Dialyzer do
 
     {us, {active_plt, mod_deps, md5, warnings}} =
       :timer.tc(fn ->
+        # Do we need a series of tasks here? How big is the content that we're passing through?
         Task.async_stream(file_changes, fn {file, {content, _}} ->
           write_temp_file(root_path, file, content)
         end)
@@ -301,6 +303,8 @@ defmodule ElixirLS.LanguageServer.Dialyzer do
           File.rm(temp_file_path(root_path, file))
         end
 
+        # This all seems like a lot of bookkeeping that I would rather dialyxir
+        # take care of for us
         temp_modules =
           for file <- Path.wildcard(temp_file_path(root_path, "**/*.beam")), into: %{} do
             {String.to_atom(Path.basename(file, ".beam")), to_charlist(file)}
