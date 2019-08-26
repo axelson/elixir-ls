@@ -10,14 +10,75 @@ defmodule ElixirLS.LanguageServer.Providers.References do
 
   def references(text, line, character, _include_declaration) do
     Build.with_build_lock(fn ->
+      ElixirSense.all_modules()
+      |> Enum.map(&to_string/1)
+      |> Enum.filter(fn module_name ->
+        String.contains?(module_name, "LsProxy") || String.contains?(module_name, "HNClient")
+      end)
+      |> JaxUtils.plog(label: "all modules filtered contains other")
+
+      ElixirSense.all_modules()
+      |> Enum.map(&to_string/1)
+      |> Enum.filter(fn module_name ->
+        String.starts_with?(module_name, "ElixirLS.LanguageServer.Providers")
+      end)
+      |> JaxUtils.plog(label: "all modules filtered ls")
+
+      new_ref = new_references(text, line, character)
+      JaxUtils.plog(new_ref, label: "new_ref")
+
       xref_at_cursor(text, line, character)
+      |> JaxUtils.plog(label: "before_filter")
       |> Enum.filter(fn %{line: line} -> is_integer(line) end)
+      |> JaxUtils.plog(label: "filtered")
       |> Enum.map(&build_location/1)
+      |> JaxUtils.plog(label: "old references")
+
+      # new_ref
     end)
+    |> JaxUtils.plog(label: "final references")
   end
 
   def supported? do
     Mix.Tasks.Xref.__info__(:functions) |> Enum.member?({:calls, 0})
+  end
+
+  def new_references(text, line, character) do
+    references =
+      ElixirSense.references(text, line + 1, character + 1)
+      |> JaxUtils.plog(label: "plain references")
+      |> Enum.map(&build_reference/1)
+
+    references
+    |> Enum.map(fn reference ->
+      build_loc(reference)
+    end)
+  end
+
+  defp build_reference(ref) do
+    %{
+      range: %{
+        start: %{line: ref.range.start.line, column: ref.range.start.column},
+        end: %{line: ref.range.end.line, column: ref.range.end.column}
+      },
+      uri: ref.uri
+    }
+  end
+
+  defp build_loc(reference) do
+    # Adjust for ElixirSense 1-based indexing
+    line_start = reference.range.start.line - 1
+    line_end = reference.range.end.line - 1
+    column_start = reference.range.start.column - 1
+    column_end = reference.range.end.column - 1
+
+    %{
+      "uri" => SourceFile.path_to_uri(reference.uri),
+      "range" => %{
+        "start" => %{"line" => line_start, "character" => column_start},
+        "end" => %{"line" => line_end, "character" => column_end}
+      }
+    }
   end
 
   defp xref_at_cursor(text, line, character) do

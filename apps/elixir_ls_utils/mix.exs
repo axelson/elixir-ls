@@ -27,6 +27,7 @@ defmodule ElixirLS.Utils.Mixfile do
   defp deps do
     [
       {:jason, "~> 1.1"},
+      {:data_tracer, path: "~/dev/data_tracer"},
       {:mix_task_archive_deps, github: "JakeBecker/mix_task_archive_deps"}
     ]
   end
