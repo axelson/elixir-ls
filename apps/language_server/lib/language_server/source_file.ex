@@ -211,14 +211,12 @@ defmodule ElixirLS.LanguageServer.SourceFile do
     """
   end
 
-  @spec formatter_opts(String.t()) :: {:ok, keyword()} | :error
-  def formatter_opts(uri) do
+  @spec formatter_opts(String.t(), String.t()) :: {:ok, keyword()} | :error
+  def formatter_opts(uri, project_dir) do
     path = path_from_uri(uri)
 
     try do
-      opts =
-        path
-        |> Mix.Tasks.Format.formatter_opts_for_file()
+      opts = ElixirLS.LanguageServer.FormatterOpts.formatter_opts_for_file(path, project_dir)
 
       {:ok, opts}
     rescue

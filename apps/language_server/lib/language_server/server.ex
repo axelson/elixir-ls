@@ -533,8 +533,9 @@ defmodule ElixirLS.LanguageServer.Server do
     signature_help_supported =
       !!get_in(state.client_capabilities, ["textDocument", "signatureHelp"])
 
+    IO.inspect(state.project_dir, label: "state.project_dir")
     locals_without_parens =
-      case SourceFile.formatter_opts(uri) do
+      case SourceFile.formatter_opts(uri, state.project_dir) do
         {:ok, opts} -> Keyword.get(opts, :locals_without_parens, [])
         :error -> []
       end
@@ -591,7 +592,7 @@ defmodule ElixirLS.LanguageServer.Server do
   end
 
   defp handle_request(execute_command_req(_id, command, args), state) do
-    {:async, fn -> ExecuteCommand.execute(command, args, state.source_files) end, state}
+    {:async, fn -> ExecuteCommand.execute(command, args, state.source_files, state.project_dir) end, state}
   end
 
   defp handle_request(macro_expansion(_id, whole_buffer, selected_macro, macro_line), state) do

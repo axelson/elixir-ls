@@ -1,6 +1,7 @@
 defmodule ElixirLS.LanguageServer.Providers.Formatting do
   import ElixirLS.LanguageServer.Protocol, only: [range: 4]
   alias ElixirLS.LanguageServer.SourceFile
+  alias ElixirLS.LanguageServer.JsonRpc
 
   def supported? do
     function_exported?(Code, :format_string!, 2)
@@ -8,7 +9,7 @@ defmodule ElixirLS.LanguageServer.Providers.Formatting do
 
   def format(source_file, uri, project_dir) do
     if can_format?(uri, project_dir) do
-      case SourceFile.formatter_opts(uri) do
+      case SourceFile.formatter_opts(uri, project_dir) do
         {:ok, opts} ->
           if should_format?(uri, project_dir, opts[:inputs]) do
             formatted = IO.iodata_to_binary([Code.format_string!(source_file.text, opts), ?\n])
@@ -43,8 +44,15 @@ defmodule ElixirLS.LanguageServer.Providers.Formatting do
   defp can_format?(file_uri, project_dir) do
     file_path = file_uri |> SourceFile.path_from_uri() |> Path.absname()
 
-    not String.starts_with?(file_path, project_dir) or
+    can_format = not String.starts_with?(file_path, project_dir) or
       String.starts_with?(file_path, File.cwd!())
+
+    if can_format do
+      true
+    else
+      JsonRpc.log_message(:error, "Formatting even though we're in a different CWD")
+      true
+    end
   end
 
   def should_format?(file_uri, project_dir, inputs) when is_list(inputs) do
