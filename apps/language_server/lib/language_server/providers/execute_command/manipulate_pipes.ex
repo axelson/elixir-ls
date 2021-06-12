@@ -16,7 +16,7 @@ defmodule ElixirLS.LanguageServer.Providers.ExecuteCommand.ManipulatePipes do
   @newlines ["\r\n", "\n", "\r"]
 
   @impl ElixirLS.LanguageServer.Providers.ExecuteCommand
-  def execute([operation, uri, line, col], state)
+  def execute([operation, uri, line, col], state, _project_dir)
       when is_integer(line) and is_integer(col) and is_binary(uri) and
              operation in ["toPipe", "fromPipe"] do
     # line and col are assumed to be 0-indexed

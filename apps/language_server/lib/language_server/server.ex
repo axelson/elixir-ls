@@ -659,7 +659,7 @@ defmodule ElixirLS.LanguageServer.Server do
       !!get_in(state.client_capabilities, ["textDocument", "signatureHelp"])
 
     locals_without_parens =
-      case SourceFile.formatter_opts(uri) do
+      case SourceFile.formatter_opts(uri, state.project_dir) do
         {:ok, opts} -> Keyword.get(opts, :locals_without_parens, [])
         :error -> []
       end
@@ -728,7 +728,8 @@ defmodule ElixirLS.LanguageServer.Server do
   defp handle_request(execute_command_req(_id, command, args) = req, state) do
     {:async,
      fn ->
-       case ExecuteCommand.execute(command, args, state) do
+       # FIXME: Don't pass in the server state here!
+       case ExecuteCommand.execute(command, args, state, state.project_dir) do
          {:error, :invalid_request, _msg} = res ->
            JsonRpc.log_message(:warning, "Unmatched request: #{inspect(req)}")
            res
@@ -1171,6 +1172,7 @@ defmodule ElixirLS.LanguageServer.Server do
     state
   end
 
+  # This is terrible
   def get_source_file(state, uri) do
     case state.source_files[uri] do
       nil ->

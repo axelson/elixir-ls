@@ -1,12 +1,13 @@
 defmodule ElixirLS.LanguageServer.Providers.Formatting do
   import ElixirLS.LanguageServer.Protocol, only: [range: 4]
   alias ElixirLS.LanguageServer.SourceFile
+  alias ElixirLS.LanguageServer.JsonRpc
 
   def format(%SourceFile{} = source_file, uri, project_dir) do
     if can_format?(uri, project_dir) do
-      case SourceFile.formatter_opts(uri) do
-        {:ok, opts} ->
-          if should_format?(uri, project_dir, opts[:inputs]) do
+      case SourceFile.formatter_opts(uri, project_dir) do
+        {:ok, opts, formatter_dir} ->
+          if should_format?(uri, project_dir, opts[:inputs], formatter_dir) do
             formatted = IO.iodata_to_binary([Code.format_string!(source_file.text, opts), ?\n])
 
             response =
@@ -16,6 +17,7 @@ defmodule ElixirLS.LanguageServer.Providers.Formatting do
 
             {:ok, response}
           else
+            IO.puts("should not format!")
             {:ok, []}
           end
 
@@ -39,27 +41,45 @@ defmodule ElixirLS.LanguageServer.Providers.Formatting do
   defp can_format?(file_uri = "file:" <> _, project_dir) do
     file_path = file_uri |> SourceFile.abs_path_from_uri()
 
-    String.starts_with?(file_path, Path.absname(project_dir)) or
+    can_format = not String.starts_with?(file_path, Path.absname(project_dir)) or
       String.starts_with?(file_path, File.cwd!())
+
+    if can_format do
+      true
+    else
+      JsonRpc.log_message(:error, "Formatting even though we're in a different CWD")
+      true
+    end
   end
 
   defp can_format?(_uri, _project_dir), do: false
 
-  def should_format?(file_uri, project_dir, inputs) when is_list(inputs) do
+  def should_format?(file_uri, project_dir, inputs, formatter_dir) when is_list(inputs) do
     file_path = file_uri |> SourceFile.abs_path_from_uri()
+    IO.inspect(file_path, label: "file_path")
+    IO.inspect(inputs, label: "inputs")
 
     inputs
+    |> IO.inspect(label: "inputs")
     |> Stream.flat_map(fn glob ->
+      IO.inspect(glob, label: "glob")
       [
         Path.join([project_dir, glob]),
         Path.join([project_dir, "apps", "*", glob])
       ]
+      |> IO.inspect(label: "probably bad")
     end)
+    |> IO.inspect(label: "before wildcard")
+    # FIXME: This is wrong because the inputs above are not relative to the
+    # formatter_dir (which is passed in but isn't currently even calculated
+    # correctly)
     |> Stream.flat_map(&Path.wildcard(&1, match_dot: true))
+    |> Enum.to_list()
+    |> IO.inspect(label: "mapped")
     |> Enum.any?(&(file_path == &1))
   end
 
-  def should_format?(_file_uri, _project_dir, _inputs), do: true
+  def should_format?(_file_uri, _project_dir, _inputs, _formatter_dire), do: true
 
   defp myers_diff_to_text_edits(myers_diff) do
     myers_diff_to_text_edits(myers_diff, {0, 0}, [])
