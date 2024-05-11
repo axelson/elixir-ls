@@ -273,7 +273,8 @@ defmodule ElixirLS.LanguageServer.Build do
       set_compiler_options()
 
       # Override build directory to avoid interfering with other dev tools
-      Mix.ProjectStack.post_config(build_path: ".elixir_ls/build")
+      # most important
+      Mix.ProjectStack.post_config(build_path: ".elixir_ls2/build")
       Mix.ProjectStack.post_config(prune_code_paths: false)
 
       Mix.ProjectStack.post_config(

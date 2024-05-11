@@ -686,7 +686,8 @@ defmodule ElixirLS.LanguageServer.Server do
         relative_path = Path.relative_to(path, state.project_dir)
         first_path_segment = relative_path |> Path.split() |> hd
 
-        first_path_segment not in [".elixir_ls", "_build"] and
+        # HERE
+        first_path_segment not in [".elixir_ls2", "_build"] and
           Path.extname(path) in (additional_watched_extensions ++ @default_watched_extensions) and
           (type in [1, 3] or not Map.has_key?(state.source_files, uri) or
              state.source_files[uri].dirty?)

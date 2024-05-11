@@ -343,7 +343,8 @@ defmodule ElixirLS.LanguageServer.Dialyzer do
             _ ->
               JsonRpc.show_message(
                 :error,
-                "ElixirLS Dialyzer is unable to process one of the beam files. Please remove .elixir_ls/dialyzer* directory manually"
+                # minor
+                "ElixirLS Dialyzer is unable to process one of the beam files. Please remove .elixir_ls2/dialyzer* directory manually"
               )
 
               :ok
@@ -400,7 +401,8 @@ defmodule ElixirLS.LanguageServer.Dialyzer do
   defp temp_file_path(root_path, file) do
     Path.join([
       root_path,
-      ".elixir_ls/dialyzer_#{System.otp_release()}_#{System.version()}_tmp",
+      # here
+      ".elixir_ls2/dialyzer_#{System.otp_release()}_#{System.version()}_tmp",
       file
     ])
   end
